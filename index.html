@@ -2,163 +2,561 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Live Cricket Scorer</title>
+  <title>Cricket Score Entry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{font-family:Arial,sans-serif;background:#f7f7f7;padding:10px;}
-    h2{color:#039591;margin-bottom:5px;}
-    .inputs,.scoreboard{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-    input{padding:8px;border-radius:8px;border:1px solid #ccc;font-size:16px;}
-    .scoreboard{
-      background:#fff;border-radius:10px;padding:10px;
-      display:grid;grid-template-columns:repeat(3,1fr);text-align:center;font-size:18px;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 10px;
     }
-    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-    .btn{background:#039591;color:#fff;padding:15px;border:none;border-radius:10px;font-size:18px;box-shadow:0 3px #02726d;}
-    .btn:active{box-shadow:none;transform:translateY(2px);}
-    .control{display:flex;gap:10px;margin-bottom:10px;}
-    .control button{flex:1;padding:10px;border-radius:6px;border:none;background:#555;color:#fff;}
-    .popup{
-      display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-      background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.3);z-index:100;text-align:center;
+    h2 {color:#039591;}
+    .inputs, .score {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:10px;
     }
-    .popup button{margin:5px;padding:10px;background:#ffb703;border:none;border-radius:6px;}
-    .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99;}
+    input {
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:16px;
+    }
+    .scoreboard {
+      background:#fff;
+      border-radius:10px;
+      padding:10px;
+      margin-bottom:10px;
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .numpad {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      
+    }
+    .btn {
+      background:#039591;
+      color:#fff;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      font-size:25px;
+      font-weight: 600;
+      box-shadow:0 3px #02726d;
+      cursor:pointer;
+    }
+    .btn:active {box-shadow:none; transform:translateY(2px);}
+    /* special buttons */
+    .btn-no {background:#ffb703;color:#000;}
+    .btn-wd {background:purple;color:#fff;}
+    .btn-out {background:red;color:#ffffff;}
+    
+
+    .popup {
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:#fff;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.3);
+      z-index:100;
+      min-width:240px;
+    }
+    .popup h3 {margin:0 0 8px 0;}
+    .popup button {
+      margin:5px;
+      padding:10px;
+      background:#ffb703;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .overlay {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      z-index:99;
+    }
+    .muted {color:gray;font-size:14px;}
+    .actions {display:flex;gap:10px;margin-top:10px;}
+    .actions button {
+      padding:10px 15px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .undo {background:#03a9f4; color: #fff;}
+    .clear {background:#f55;color:#fff;}
+    .rotate {background:#03a9f4;color:#fff;}
+
+    /* small helper */
+    .input-inline {display:flex;gap:8px;align-items:center;}
+    .small {font-size:13px;color:#666;}
+.input-box {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 10px 10px 10px 85px; /* left padding zyada taake label overlap na kare */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.inner-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 75px;               /* label box width */
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+}
+
+/* alag alag colours */
+.inner-label.striker {background:#039591;}       /* teal */
+.inner-label.nonstriker {background:#ffb703;color:#000;}   /* golden */
+.inner-label.bowler {background:#03a9f4;}       /* blue */
+
+
   </style>
 </head>
 <body>
-  <h2>Live Cricket Scorer</h2>
+    
+  <h2>Cricket Score Entry</h2>
   <div class="inputs">
-    <input id="batsman1" placeholder="Batsman 1 (striker)">
-    <input id="batsman2" placeholder="Batsman 2 (non-striker)">
+  <div class="input-box">
+    <span class="inner-label striker">Striker</span>
+    <input id="batsman1" placeholder="Batsman 1">
+  </div>
+  <div class="input-box">
+    <span class="inner-label nonstriker">Non-Striker</span>
+    <input id="batsman2" placeholder="Batsman 2">
+  </div>
+  <div class="input-box">
+    <span class="inner-label bowler">Bowler</span>
     <input id="bowler" placeholder="Bowler">
   </div>
+</div>
 
+  </div>
   <div class="scoreboard">
-    <div>Runs: <span id="runs">0</span></div>
-    <div>Overs: <span id="overs">0.0</span></div>
-    <div>Wkts: <span id="wkts">0</span></div>
+    <div>Total Score: <span id="totalScore">0</span></div>
+    <div>Total Overs: <span id="totalOvers">0</span></div>
   </div>
-
-  <div class="control">
-    <button onclick="swapBatsman()">Swap Batsman</button>
-    <button onclick="undoLast()">Undo Last Ball</button>
-  </div>
-
   <div class="numpad">
-    <button class="btn" onclick="sendBall('0')">0</button>
-    <button class="btn" onclick="sendBall('1')">1</button>
-    <button class="btn" onclick="sendBall('2')">2</button>
-    <button class="btn" onclick="sendBall('3')">3</button>
-    <button class="btn" onclick="sendBall('4')">4</button>
-    <button class="btn" onclick="sendBall('6')">6</button>
-    <button class="btn" onclick="showNoPopup()">NO</button>
-    <button class="btn" onclick="sendBall('WD')">WD</button>
-    <button class="btn" onclick="showOutPopup()">OUT</button>
+    <button class="btn" onclick="sendRun('0')">0</button>
+    <button class="btn" onclick="sendRun('1')">1</button>
+    <button class="btn" onclick="sendRun('2')">2</button>
+    <button class="btn" onclick="sendRun('3')">3</button>
+    <button class="btn" onclick="sendRun('4')">4</button>
+    <button class="btn" onclick="sendRun('6')">6</button>
+    <button class="btn btn-no" onclick="showNoPopup()">NO</button>
+    <button class="btn btn-wd" onclick="sendRun('WD')">WD</button>
+    <button class="btn btn-out" onclick="startOutFlow()">OUT</button>
+  </div>
+  <div class="actions">
+    <button class="undo" onclick="undoLast()">Undo</button>
+    <button class="clear" onclick="clearAll()">Clear All</button>
+    <button class="rotate" onclick="rotateStrike()">Rotate Strike</button>
   </div>
 
+  <!-- overlay & popups -->
   <div class="overlay" id="overlay"></div>
 
+  <!-- NO popup -->
   <div class="popup" id="noPopup">
     <h3>No Ball Options</h3>
-    <button onclick="sendBall('NO')">No</button>
-    <button onclick="sendBall('N1')">N1</button>
-    <button onclick="sendBall('N2')">N2</button>
-    <button onclick="sendBall('N3')">N3</button>
-    <button onclick="sendBall('N4')">N4</button>
-    <button onclick="sendBall('N6')">N6</button>
+    <div class="input-inline">
+      <button onclick="handleNoChoice('NO')">No</button>
+      <button onclick="handleNoChoice('N1')">N1</button>
+      <button onclick="handleNoChoice('N2')">N2</button>
+      <button onclick="handleNoChoice('N3')">N3</button>
+      <button onclick="handleNoChoice('N4')">N4</button>
+      <button onclick="handleNoChoice('N6')">N6</button>
+    </div>
   </div>
 
-  <div class="popup" id="outPopup">
-    <h3>Out Type</h3>
-    <button onclick="sendBall('Bowled',true)">Bowled</button>
-    <button onclick="sendBall('Catch',true)">Catch</button>
-    <button onclick="sendBall('Run Out',true)">Run Out</button>
+  <!-- OUT: who is out -->
+  <div class="popup" id="whoOutPopup">
+    <h3>Who is out?</h3>
+    <div class="input-inline">
+      <button id="whoOutBtn1" onclick="selectWhoOut(1)"></button>
+      <button id="whoOutBtn2" onclick="selectWhoOut(2)"></button>
+    </div>
   </div>
+
+  <!-- OUT: type -->
+  <div class="popup" id="outTypePopup">
+    <h3>Select Out Type</h3>
+    <div class="input-inline">
+      <button onclick="selectOutType('Bowled')">Bowled</button>
+      <button onclick="selectOutType('Catch')">Catch</button>
+      <button onclick="selectOutType('Run Out')">Run Out</button>
+    </div>
+  </div>
+
+  <!-- Next batsman -->
+  <div class="popup" id="nextBatsmanPopup">
+    <h3 class="muted">Enter next batsman (required)</h3>
+    <input id="nextBatsmanName" placeholder="Next batsman">
+    <div style="margin-top:8px"><button onclick="confirmNextBatsman()">OK</button></div>
+  </div>
+
+  <!-- Next bowler (required sometimes) -->
+  <div class="popup" id="nextBowlerPopup">
+    <h3 class="muted">Enter next bowler (required)</h3>
+    <input id="nextBowlerName" placeholder="Next bowler">
+    <div style="margin-top:8px"><button onclick="confirmNextBowler()">OK</button></div>
+  </div>
+
+  
 
 <script>
-  const APP_SCRIPT_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyhB7zWr7iiK5G-rmSZZ_hUJo_7O2Pad1knwAdXQ9YC7QVP75VgUNj2E0aPt-2bu_X3bA/exec"; // apna URL lagao
-  let runs=0, wkts=0, balls=0;
-  let lastEventId=null;
+  // ====== CONFIG: replace with your deployed web app URL ======
+  const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhB7zWr7iiK5G-rmSZZ_hUJo_7O2Pad1knwAdXQ9YC7QVP75VgUNj2E0aPt-2bu_X3bA/exec";
+  // ===========================================================
 
-  function updateBoard(){
-    document.getElementById('runs').textContent=runs;
-    document.getElementById('wkts').textContent=wkts;
-    document.getElementById('overs').textContent=Math.floor(balls/6)+"."+(balls%6);
+  let totalScore = 0, totalBalls = 0;
+  let history = [];
+
+  // For OUT flow
+  let outFlow = {
+    active: false,
+    whoIndex: null,      // 1 or 2
+    outType: null,
+    wasLastBall: false,
+    pendingEvent: null   // store run/out info until confirmed
+  };
+// overlay click: only close if not mandatory
+const overlay = document.getElementById('overlay');
+overlay.addEventListener('click', function () {
+  // agar mandatory popup chal raha hai to overlay click ignore karo
+  if (document.body.dataset.mandatory === 'true') {
+    return; // do nothing
+  }
+  closePopups();
+});
+
+function closePopups() {
+  document.querySelectorAll('.popup').forEach(p => p.style.display = 'none');
+  overlay.style.display = 'none';
+  document.body.dataset.mandatory = 'false';
+
+  // reset outFlow agar half state me ho aur mandatory na ho
+  if (outFlow.active && !outFlow.pendingEvent) {
+    outFlow = {
+      active: false,
+      whoIndex: null,
+      outType: null,
+      wasLastBall: false,
+      pendingEvent: null
+    };
+  }
+}
+
+
+  function checkNames(){
+    const b1 = document.getElementById('batsman1').value.trim();
+    const b2 = document.getElementById('batsman2').value.trim();
+    const bow = document.getElementById('bowler').value.trim();
+    if(!b1 || !b2 || !bow){ alert("Please fill the Batsman 1 / Batsman 2 / Bowler"); return false; }
+    return true;
   }
 
-  function swapBatsman(){
-    const b1=document.getElementById('batsman1');
-    const b2=document.getElementById('batsman2');
-    const tmp=b1.value; b1.value=b2.value; b2.value=tmp;
+  function rotateStrike(){
+    let b1 = document.getElementById('batsman1').value;
+    let b2 = document.getElementById('batsman2').value;
+    document.getElementById('batsman1').value = b2;
+    document.getElementById('batsman2').value = b1;
   }
 
+  // ----- NO popup flow -----
   function showNoPopup(){
-    document.getElementById('overlay').style.display='block';
+    if(!checkNames()) return;
+    overlay.style.display='block';
     document.getElementById('noPopup').style.display='block';
   }
-  function showOutPopup(){
-    document.getElementById('overlay').style.display='block';
-    document.getElementById('outPopup').style.display='block';
-  }
-  function closePopups(){
-    document.getElementById('overlay').style.display='none';
-    document.getElementById('noPopup').style.display='none';
-    document.getElementById('outPopup').style.display='none';
-  }
-  document.getElementById('overlay').addEventListener('click',closePopups);
-
-  function sendBall(run,isOut=false){
+  function handleNoChoice(code){
     closePopups();
-    // local score calc:
-    if(isOut){ wkts++; balls++; }
-    else if(!isNaN(run)){runs+=parseInt(run); balls++;}
-    else if(run.startsWith('N') && run.length>1){runs+=(1+parseInt(run[1])); balls++;}
-    else if(run==='NO'){runs+=1; balls++;}
-    else if(run==='WD'){runs+=1;} // no ball for wide
-    updateBoard();
-
-    const bowler=document.getElementById('bowler').value;
-    const striker=document.getElementById('batsman1').value;
-    const payload={
-      action:"append",
-      bowler:bowler,
-      eventLabel:run,
-      striker:striker,
-      runs:run,
-      isOut:isOut
-    };
-
-    fetch("https://corsproxy.io/?" + encodeURIComponent(APP_SCRIPT_URL),{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    })
-    .then(r=>r.json())
-    .then(data=>{
-      lastEventId=data.eventId || null;
-      console.log("Sheet ok:",data);
-    })
-    .catch(err=>console.error(err));
+    sendRun(code);
   }
 
+  // ----- OUT multi-step flow -----
+  function startOutFlow(){
+    if(!checkNames()) return;
+    // prepare who-out popup with current names
+    document.getElementById('whoOutBtn1').textContent = document.getElementById('batsman1').value || 'Batsman1';
+    document.getElementById('whoOutBtn2').textContent = document.getElementById('batsman2').value || 'Batsman2';
+    overlay.style.display = 'block';
+    document.getElementById('whoOutPopup').style.display = 'block';
+    outFlow.active = true;
+    outFlow.whoIndex = null;
+    outFlow.outType = null;
+    outFlow.pendingEvent = null;
+    outFlow.wasLastBall = false;
+    // make this flow modal only when we reach nextBatsman stage; until then allow closing
+    document.body.dataset.mandatory = 'false';
+  }
+
+  function selectWhoOut(idx){
+    outFlow.whoIndex = idx; // 1 or 2
+    // now ask out type
+    document.getElementById('whoOutPopup').style.display = 'none';
+    document.getElementById('outTypePopup').style.display = 'block';
+  }
+
+  function selectOutType(type){
+    outFlow.outType = type;
+    // determine if this ball will be last ball of over AFTER counting the ball.
+    // BUT we haven't incremented totalBalls yet (we will only increment on confirm)
+    // compute what ballsInCurrentOver would be after adding this legal ball:
+    let hypotheticalTotalBalls = totalBalls + 1;
+    let ballsInCurrentOverAfter = hypotheticalTotalBalls % 6;
+    outFlow.wasLastBall = (ballsInCurrentOverAfter === 0);
+
+    // hide out type popup and force next batsman input (mandatory)
+    document.getElementById('outTypePopup').style.display = 'none';
+    overlay.style.display = 'block';
+    document.getElementById('nextBatsmanPopup').style.display = 'block';
+    // make mandatory so user cannot click outside to cancel
+    document.body.dataset.mandatory = 'true';
+  }
+
+  function confirmNextBatsman(){
+    const name = document.getElementById('nextBatsmanName').value.trim();
+    if(!name){
+      alert("Please enter next batsman name (required)");
+      return;
+    }
+    // replace the out batsman in UI with new name
+    if(outFlow.whoIndex === 1){
+      document.getElementById('batsman1').value = name;
+    } else {
+      document.getElementById('batsman2').value = name;
+    }
+    document.getElementById('nextBatsmanName').value = '';
+    document.getElementById('nextBatsmanPopup').style.display = 'none';
+
+    // if last-ball-out, require next bowler (mandatory)
+    if(outFlow.wasLastBall){
+      document.getElementById('nextBowlerPopup').style.display = 'block';
+      // keep mandatory true
+      document.body.dataset.mandatory = 'true';
+    } else {
+      // not last ball, we can finalize the out event now
+      finalizeOutEvent();
+      document.body.dataset.mandatory = 'false';
+    }
+  }
+
+  function confirmNextBowler(){
+    const name = document.getElementById('nextBowlerName').value.trim();
+    if(!name){
+      alert("Please enter next bowler name (required)");
+      return;
+    }
+    document.getElementById('bowler').value = name;
+    document.getElementById('nextBowlerName').value = '';
+    document.getElementById('nextBowlerPopup').style.display = 'none';
+    // finalize out event now that next batsman and next bowler both provided
+    finalizeOutEvent();
+    document.body.dataset.mandatory = 'false';
+  }
+
+  function finalizeOutEvent(){
+    // Build event label like "Out:Bowled (whoName)"
+    const whoName = (outFlow.whoIndex === 1) ? document.getElementById('batsman1').value : document.getElementById('batsman2').value;
+    // Note: whoName at this point already replaced with new batsman; we need the victim name.
+    // We saved victim earlier? We didn't — so we should read from history of UI: we changed the UI already.
+    // To preserve victim, better to capture victimName when who selected.
+    // We'll adjust: store victimName at selectWhoOut time. (But current code didn't.)
+    // To handle this properly, we will store victimName in outFlow at selectWhoOut.
+    // So modify selectWhoOut to set outFlow.victimName. (We've implemented earlier in this file.)
+    const victim = outFlow.victimName || ("Batsman" + outFlow.whoIndex);
+
+    const eventLabel = "OUT:" + outFlow.outType + " (" + victim + ")";
+
+    // Now apply scoring: outs are legal balls, runs = 0, ball count +1
+    const runsToAdd = 0;
+    const ballAdd = 1;
+    const isLegalBall = true;
+
+    totalScore += runsToAdd;
+    totalBalls += ballAdd;
+    updateScore();
+
+    // push history
+    history.push({run: eventLabel, runs: runsToAdd, balls: ballAdd});
+
+    // send to sheet with current striker (batsman1 is striker by invariant)
+    const bowler = document.getElementById('bowler').value;
+    const striker = document.getElementById('batsman1').value;
+    sendToSheetRaw({ action: 'append', bowler: bowler, eventLabel: eventLabel, striker: striker });
+
+    // handle strike rotation same as other legal balls
+    handleStrikeRotationForRunString("0", isLegalBall);
+
+    // after finalize, reset outFlow
+    outFlow = { active:false, whoIndex:null, outType:null, wasLastBall:false, pendingEvent:null, victimName:null };
+
+    closePopups();
+  }
+
+  // Fix: store victimName at selection time (update selectWhoOut)
+  function selectWhoOut(idx){
+    outFlow.whoIndex = idx; // 1 or 2
+    outFlow.victimName = (idx===1) ? document.getElementById('batsman1').value : document.getElementById('batsman2').value;
+    document.getElementById('whoOutPopup').style.display = 'none';
+    document.getElementById('outTypePopup').style.display = 'block';
+  }
+
+  // ----- Generic run handling -----
+  function sendRun(run){
+    if(!checkNames()) return;
+    closePopups();
+    // if an outFlow is active and waiting earlier steps, disallow normal runs
+    if(outFlow.active && document.body.dataset.mandatory === 'true'){
+      alert("Please complete the OUT flow first.");
+      return;
+    }
+
+    // compute runs/balls/isLegalBall
+    let runsToAdd = 0, ballAdd = 0, isLegalBall = false;
+
+    if(!isNaN(run)){ // 0,1,2,3,4,6
+      runsToAdd = parseInt(run); ballAdd = 1; isLegalBall = true;
+    } else if(run === 'WD'){
+      runsToAdd = 1; ballAdd = 0; isLegalBall = false;
+    } else if(run === 'NO'){
+      runsToAdd = 1; ballAdd = 0; isLegalBall = false;
+    } else if(run.startsWith('N')){
+      // N1,N2...
+      let add = parseInt(run[1]);
+      runsToAdd = 1 + (isNaN(add) ? 0 : add);
+      ballAdd = 0; isLegalBall = false;
+    } else {
+      // unknown label -> treat as legal single (fallback)
+      runsToAdd = 0; ballAdd = 1; isLegalBall = true;
+    }
+
+    // apply immediately for normal runs / wides / no-balls
+    totalScore += runsToAdd;
+    totalBalls += ballAdd;
+    updateScore();
+
+    history.push({run: run, runs: runsToAdd, balls: ballAdd});
+
+    // send to sheet immediately (since these are not requiring mandatory inputs)
+    sendToSheetRaw({ action: 'append', bowler: document.getElementById('bowler').value, eventLabel: run, striker: document.getElementById('batsman1').value });
+
+    // strike rotation (legal balls only)
+    handleStrikeRotationForRunString(run, isLegalBall);
+  }
+
+  function handleStrikeRotationForRunString(run, isLegalBall){
+  // illegal ball par normally kuch nahi
+  if(!isLegalBall){
+    // exception: N1 and N3 rotate strike
+    if(run === 'N1' || run === 'N3'){
+      rotateStrike();
+    }
+    return;
+  }
+
+  let ballsInCurrentOver = totalBalls % 6;
+
+  const isOddRun = (run === '1' || run === '3');
+  const isEvenRun = (run === '2' || run === '4' || run === '6' || run === '0');
+
+  if(ballsInCurrentOver === 0){
+    if(isEvenRun) rotateStrike();
+    overlay.style.display = 'block';
+    document.getElementById('nextBowlerPopup').style.display = 'block';
+    document.body.dataset.mandatory = 'true';
+  } else {
+    if(isOddRun) rotateStrike();
+  }
+}
+
+
+  // ----- send to sheet helper (no CORS proxy) -----
+  function sendToSheetRaw(payload){
+    fetch(APP_SCRIPT_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    }).then(res => res.json ? res.json() : res.text()).then(data => console.log('sheet:',data)).catch(err => console.error('sheet err',err));
+  }
+
+  function sendToSheet(run){
+    // kept for backwards compatibility — use raw to send payload object
+    sendToSheetRaw({ action: 'append', bowler: document.getElementById('bowler').value, eventLabel: run, striker: document.getElementById('batsman1').value });
+  }
+
+  // ----- next bowler / batsman set functions for non-OUT cases -----
+  function setNextBowler(){
+    const name = document.getElementById('nextBowlerName').value.trim();
+    if(name) document.getElementById('bowler').value = name;
+    document.getElementById('nextBowlerName').value = '';
+    closePopups();
+  }
+  function setNextBatsman(){
+    const name = document.getElementById('nextBatsmanName').value.trim();
+    if(name) document.getElementById('batsman1').value = name;
+    document.getElementById('nextBatsmanName').value = '';
+    closePopups();
+  }
+
+  // ----- Undo / Clear -----
   function undoLast(){
-    if(!lastEventId){alert("No last event to undo");return;}
-    fetch("https://corsproxy.io/?" + encodeURIComponent(APP_SCRIPT_URL),{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"undo",eventId:lastEventId})
-    })
-    .then(r=>r.json())
-    .then(data=>{
-      console.log("Undo:",data);
-      // simple local reverse:
-      // (in real app you’d recalc from sheet)
-      alert("Last ball undone (refresh to update scoreboard)");
-    })
-    .catch(err=>console.error(err));
+    const last = history.pop();
+    if(!last){ alert("Nothing to undo"); return; }
+    totalScore -= last.runs;
+    totalBalls -= last.balls;
+    if(totalScore < 0) totalScore = 0;
+    if(totalBalls < 0) totalBalls = 0;
+    updateScore();
+    // tell sheet to undo (your Apps Script should handle action:"undo")
+    sendToSheetRaw({ action: 'undo' });
   }
 
+  function clearAll(){
+    totalScore = 0; totalBalls = 0; history = [];
+    updateScore();
+    document.getElementById('batsman1').value = '';
+    document.getElementById('batsman2').value = '';
+    document.getElementById('bowler').value = '';
+    sendToSheetRaw({ action: 'match_end' });
+  }
+
+  // ----- score UI -----
+  function updateScore(){
+    document.getElementById('totalScore').textContent = totalScore;
+    document.getElementById('totalOvers').textContent = (Math.floor(totalBalls/6) + "." + (totalBalls%6));
+  }
+
+  // ----- small improvement: when showing whoOut popup set button texts (we already do it above),
+  // but ensure overlay mandatory behavior: if user closes whoOut popup without proceeding, clear outFlow
+  // already handled by closePopups
 </script>
 </body>
 </html>
