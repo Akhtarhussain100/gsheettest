@@ -2,123 +2,96 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Cricket Score Entry</title>
+  <title>Live Cricket Scorer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      padding: 10px;
+    body{font-family:Arial,sans-serif;background:#f7f7f7;padding:10px;}
+    h2{color:#039591;margin-bottom:5px;}
+    .inputs,.scoreboard{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+    input{padding:8px;border-radius:8px;border:1px solid #ccc;font-size:16px;}
+    .scoreboard{
+      background:#fff;border-radius:10px;padding:10px;
+      display:grid;grid-template-columns:repeat(3,1fr);text-align:center;font-size:18px;
     }
-    h2 {color:#039591;}
-    .inputs, .score {
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin-bottom:10px;
+    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+    .btn{background:#039591;color:#fff;padding:15px;border:none;border-radius:10px;font-size:18px;box-shadow:0 3px #02726d;}
+    .btn:active{box-shadow:none;transform:translateY(2px);}
+    .control{display:flex;gap:10px;margin-bottom:10px;}
+    .control button{flex:1;padding:10px;border-radius:6px;border:none;background:#555;color:#fff;}
+    .popup{
+      display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+      background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.3);z-index:100;text-align:center;
     }
-    input {
-      padding:10px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:16px;
-    }
-    .scoreboard {
-      background:#fff;
-      border-radius:10px;
-      padding:10px;
-      margin-bottom:10px;
-    }
-    .numpad {
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-    }
-    .btn {
-      background:#039591;
-      color:#fff;
-      padding:15px;
-      border:none;
-      border-radius:10px;
-      font-size:18px;
-      box-shadow:0 3px #02726d;
-    }
-    .btn:active {box-shadow:none; transform:translateY(2px);}
-    .popup {
-      display:none;
-      position:fixed;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      background:#fff;
-      padding:20px;
-      border-radius:10px;
-      box-shadow:0 0 10px rgba(0,0,0,0.3);
-      z-index:100;
-    }
-    .popup button {
-      margin:5px;
-      padding:10px;
-      background:#ffb703;
-      border:none;
-      border-radius:6px;
-    }
-    .overlay {
-      display:none;
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,0.5);
-      z-index:99;
-    }
+    .popup button{margin:5px;padding:10px;background:#ffb703;border:none;border-radius:6px;}
+    .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99;}
   </style>
 </head>
 <body>
-  <h2>Cricket Score Entry</h2>
+  <h2>Live Cricket Scorer</h2>
   <div class="inputs">
-    <input id="batsman1" placeholder="Batsman 1">
-    <input id="batsman2" placeholder="Batsman 2">
+    <input id="batsman1" placeholder="Batsman 1 (striker)">
+    <input id="batsman2" placeholder="Batsman 2 (non-striker)">
     <input id="bowler" placeholder="Bowler">
   </div>
+
   <div class="scoreboard">
-    <div>Total Score: <span id="totalScore">0</span></div>
-    <div>Total Overs: <span id="totalOvers">0</span></div>
+    <div>Runs: <span id="runs">0</span></div>
+    <div>Overs: <span id="overs">0.0</span></div>
+    <div>Wkts: <span id="wkts">0</span></div>
   </div>
+
+  <div class="control">
+    <button onclick="swapBatsman()">Swap Batsman</button>
+    <button onclick="undoLast()">Undo Last Ball</button>
+  </div>
+
   <div class="numpad">
-    <button class="btn" onclick="sendRun('0')">0</button>
-    <button class="btn" onclick="sendRun('1')">1</button>
-    <button class="btn" onclick="sendRun('2')">2</button>
-    <button class="btn" onclick="sendRun('3')">3</button>
-    <button class="btn" onclick="sendRun('4')">4</button>
-    <button class="btn" onclick="sendRun('6')">6</button>
+    <button class="btn" onclick="sendBall('0')">0</button>
+    <button class="btn" onclick="sendBall('1')">1</button>
+    <button class="btn" onclick="sendBall('2')">2</button>
+    <button class="btn" onclick="sendBall('3')">3</button>
+    <button class="btn" onclick="sendBall('4')">4</button>
+    <button class="btn" onclick="sendBall('6')">6</button>
     <button class="btn" onclick="showNoPopup()">NO</button>
-    <button class="btn" onclick="sendRun('WD')">WD</button>
+    <button class="btn" onclick="sendBall('WD')">WD</button>
     <button class="btn" onclick="showOutPopup()">OUT</button>
   </div>
 
-  <!-- NO popup -->
   <div class="overlay" id="overlay"></div>
+
   <div class="popup" id="noPopup">
     <h3>No Ball Options</h3>
-    <button onclick="sendRun('NO')">No</button>
-    <button onclick="sendRun('N1')">N1</button>
-    <button onclick="sendRun('N2')">N2</button>
-    <button onclick="sendRun('N3')">N3</button>
-    <button onclick="sendRun('N4')">N4</button>
-    <button onclick="sendRun('N6')">N6</button>
+    <button onclick="sendBall('NO')">No</button>
+    <button onclick="sendBall('N1')">N1</button>
+    <button onclick="sendBall('N2')">N2</button>
+    <button onclick="sendBall('N3')">N3</button>
+    <button onclick="sendBall('N4')">N4</button>
+    <button onclick="sendBall('N6')">N6</button>
   </div>
 
-  <!-- OUT popup -->
   <div class="popup" id="outPopup">
     <h3>Out Type</h3>
-    <button onclick="sendRun('Bowled')">Bowled</button>
-    <button onclick="sendRun('Catch')">Catch</button>
-    <button onclick="sendRun('Run Out')">Run Out</button>
+    <button onclick="sendBall('Bowled',true)">Bowled</button>
+    <button onclick="sendBall('Catch',true)">Catch</button>
+    <button onclick="sendBall('Run Out',true)">Run Out</button>
   </div>
-  
+
 <script>
-  const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhB7zWr7iiK5G-rmSZZ_hUJo_7O2Pad1knwAdXQ9YC7QVP75VgUNj2E0aPt-2bu_X3bA/exec"; // apna URL lagao
-  let totalScore=0, totalBalls=0;
+  const APP_SCRIPT_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyhB7zWr7iiK5G-rmSZZ_hUJo_7O2Pad1knwAdXQ9YC7QVP75VgUNj2E0aPt-2bu_X3bA/exec"; // apna URL lagao
+  let runs=0, wkts=0, balls=0;
+  let lastEventId=null;
+
+  function updateBoard(){
+    document.getElementById('runs').textContent=runs;
+    document.getElementById('wkts').textContent=wkts;
+    document.getElementById('overs').textContent=Math.floor(balls/6)+"."+(balls%6);
+  }
+
+  function swapBatsman(){
+    const b1=document.getElementById('batsman1');
+    const b2=document.getElementById('batsman2');
+    const tmp=b1.value; b1.value=b2.value; b2.value=tmp;
+  }
 
   function showNoPopup(){
     document.getElementById('overlay').style.display='block';
@@ -128,7 +101,6 @@
     document.getElementById('overlay').style.display='block';
     document.getElementById('outPopup').style.display='block';
   }
-
   function closePopups(){
     document.getElementById('overlay').style.display='none';
     document.getElementById('noPopup').style.display='none';
@@ -136,37 +108,57 @@
   }
   document.getElementById('overlay').addEventListener('click',closePopups);
 
-  function sendRun(run){
+  function sendBall(run,isOut=false){
     closePopups();
-    // simple local score update:
-    if(!isNaN(run)) { totalScore+=parseInt(run); totalBalls++; }
-    if(run.startsWith('N') && run.length>1){ // N1,N2 etc
-      let add=parseInt(run[1]);
-      totalScore+= (1+add); // 1 no ball + runs
-      totalBalls++; 
-    }
-    if(run==='NO'){ totalScore+=1; totalBalls++; }
-    document.getElementById('totalScore').textContent=totalScore;
-    document.getElementById('totalOvers').textContent=(Math.floor(totalBalls/6)+"."+ (totalBalls%6));
+    // local score calc:
+    if(isOut){ wkts++; balls++; }
+    else if(!isNaN(run)){runs+=parseInt(run); balls++;}
+    else if(run.startsWith('N') && run.length>1){runs+=(1+parseInt(run[1])); balls++;}
+    else if(run==='NO'){runs+=1; balls++;}
+    else if(run==='WD'){runs+=1;} // no ball for wide
+    updateBoard();
 
-    // send to Google Sheet
     const bowler=document.getElementById('bowler').value;
-    const striker=document.getElementById('batsman1').value; // simple example
-    fetch("https://corsproxy.io/?" + encodeURIComponent(APP_SCRIPT_URL), {
+    const striker=document.getElementById('batsman1').value;
+    const payload={
+      action:"append",
+      bowler:bowler,
+      eventLabel:run,
+      striker:striker,
+      runs:run,
+      isOut:isOut
+    };
+
+    fetch("https://corsproxy.io/?" + encodeURIComponent(APP_SCRIPT_URL),{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        action:"append",
-        bowler:bowler,
-        eventLabel:run,
-        striker:striker,
-        runs:run
-      })
+      body:JSON.stringify(payload)
     })
-    .then(res=>res.json())
-    .then(data=>console.log(data))
+    .then(r=>r.json())
+    .then(data=>{
+      lastEventId=data.eventId || null;
+      console.log("Sheet ok:",data);
+    })
     .catch(err=>console.error(err));
   }
+
+  function undoLast(){
+    if(!lastEventId){alert("No last event to undo");return;}
+    fetch("https://corsproxy.io/?" + encodeURIComponent(APP_SCRIPT_URL),{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"undo",eventId:lastEventId})
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      console.log("Undo:",data);
+      // simple local reverse:
+      // (in real app you’d recalc from sheet)
+      alert("Last ball undone (refresh to update scoreboard)");
+    })
+    .catch(err=>console.error(err));
+  }
+
 </script>
 </body>
 </html>
