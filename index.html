@@ -1,162 +1,600 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cricket Score Entry</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 10px;
-      text-align: center;
-    }
-    h2 {
-      color: #039591;
-    }
-    .input-boxes {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 15px;
-    }
-    input {
-      padding: 8px;
-      border: 2px solid #039591;
-      border-radius: 8px;
-      width: 30%;
-    }
-    .score-display {
-      margin: 15px 0;
-      font-size: 22px;
-      color: #ffb703;
-      font-weight: bold;
-    }
-    .numpad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 20px 0;
-    }
-    button {
-      padding: 15px;
-      font-size: 18px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(145deg, #04a69f, #02867f);
-      color: white;
-      font-weight: bold;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    }
-    button:active {
-      transform: scale(0.95);
-    }
-    .controls {
-      margin-top: 20px;
-    }
-    .controls button {
-      background: #ffb703;
-      color: black;
-      margin: 5px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mobile Cricket Scorer</title>
+<style>
+  :root{
+    --brand: #039591;
+    --brand-light: #66c9c3;
+    --accent: #ffb703;
+    --bg: #f6fbfb;
+    --card: #ffffff;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial;}
+  body{margin:0;background:var(--bg);padding:12px;color:#033;}
+  .top {
+    display:flex;gap:8px;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .panel {
+    background:linear-gradient(180deg,var(--card),#f9fffe);
+    border-radius:12px;padding:10px;box-shadow:0 6px 18px rgba(3,149,145,0.12);
+    flex:1;
+  }
+  .row {display:flex;gap:8px;}
+  .smallInput{width:100%;padding:8px;border-radius:8px;border:1px solid #e6f2f1;font-size:16px}
+  .nameBox {display:flex;flex-direction:column;gap:6px}
+  .label{font-size:12px;color:#295;opacity:.9}
+  .batter{
+    padding:10px;border-radius:10px;background:linear-gradient(180deg,var(--brand-light),#e8faf8);
+    display:flex;justify-content:space-between;align-items:center;font-weight:600;
+    box-shadow:0 6px 10px rgba(3,149,145,0.12)
+  }
+  .strikeDot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+  .scorePanel{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .scoreBig{font-size:28px;font-weight:800}
+  .overs{font-size:13px;color:#234}
+
+  /* numpad */
+  .numpad{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .btn{padding:16px;border-radius:12px;font-size:18px;font-weight:700;text-align:center;
+       background:linear-gradient(180deg,var(--brand),#008a82);color:white;box-shadow:0 8px 18px rgba(3,149,145,.18)}
+  .btn.yellow{background:linear-gradient(180deg,var(--accent),#e6a403);color:#052}
+  .btn.gray{background:linear-gradient(180deg,#eee,#ddd);color:#222;box-shadow:0 6px 12px rgba(0,0,0,.06)}
+  .wideBtn{grid-column:span:3}
+
+  /* modals */
+  .modal{
+    position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.35);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .modal.show{display:flex}
+  .mcard{width:100%;max-width:420px;background:white;border-radius:12px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .gbtn{flex:1;padding:12px;border-radius:10px;text-align:center;background:#f2f7f7;border:1px solid #e8f0ef;font-weight:700}
+
+  /* footer controls */
+  .controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .controlBtn{flex:1;padding:10px;border-radius:10px;text-align:center;background:#fff;border:1px solid #e7f2f1}
+
+  @media(min-width:700px){
+    body{max-width:700px;margin:20px auto}
+  }
+</style>
 </head>
 <body>
 
-  <h2>Cricket Score Entry</h2>
+<div class="top">
+  <div class="panel" style="flex:1">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="font-weight:800;color:var(--brand)">CTCT Live</div>
+        <div style="font-size:12px;color:#234">Mobile Scorer</div>
+      </div>
+      <div style="font-size:12px;color:#045">Brand: <span style="font-weight:700">#039591</span></div>
+    </div>
 
-  <div class="input-boxes">
-    <input type="text" id="batter1" placeholder="Batter 1">
-    <input type="text" id="batter2" placeholder="Batter 2">
-    <input type="text" id="bowler" placeholder="Bowler">
-  </div>
+    <div style="margin-top:8px" class="row">
+      <div style="flex:1" class="nameBox">
+        <div class="label">Batter 1</div>
+        <div class="batter" id="batter1Box">
+          <input id="batter1" class="smallInput" style="border:none;background:transparent;font-size:16px;font-weight:700" value="Batter 1">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="strikeDot" id="dot1" title="Click to set striker" style="cursor:pointer"></div>
+          </div>
+        </div>
+      </div>
 
-  <div class="score-display">
-    Total Score: <span id="totalScore">0</span> | Overs: <span id="overs">0.0</span>
-  </div>
+      <div style="flex:1" class="nameBox">
+        <div class="label">Batter 2</div>
+        <div class="batter" id="batter2Box">
+          <input id="batter2" class="smallInput" style="border:none;background:transparent;font-size:16px;font-weight:700" value="Batter 2">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="strikeDot" id="dot2" title="Click to set striker" style="opacity:.4;cursor:pointer"></div>
+          </div>
+        </div>
+      </div>
 
-  <div class="numpad">
-    <button onclick="addScore('0')">0</button>
-    <button onclick="addScore('1')">1</button>
-    <button onclick="addScore('2')">2</button>
-    <button onclick="addScore('3')">3</button>
-    <button onclick="addScore('4')">4</button>
-    <button onclick="addScore('6')">6</button>
-    <button onclick="addScore('wd')">Wd</button>
-    <button onclick="addScore('no')">No</button>
-    <button onclick="addScore('out')">Out</button>
-  </div>
+      <div style="width:120px;" class="nameBox">
+        <div class="label">Bowler</div>
+        <input id="bowler" class="smallInput" placeholder="Enter bowler name">
+      </div>
+    </div>
 
-  <div class="controls">
-    <button onclick="undo()">Undo</button>
-    <button onclick="clearAll()">Clear All</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+      <div style="display:flex;flex-direction:column">
+        <div class="label">Total</div>
+        <div class="scoreBig" id="totalRuns">0</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end">
+        <div class="label">Overs</div>
+        <div class="overs" id="overs">0.0</div>
+      </div>
+    </div>
+
   </div>
+</div>
+
+<!-- Numpad -->
+<div class="numpad">
+  <div class="btn" data-val="0">0</div>
+  <div class="btn" data-val="1">1</div>
+  <div class="btn" data-val="2">2</div>
+  <div class="btn" data-val="3">3</div>
+  <div class="btn" data-val="4">4</div>
+  <div class="btn" data-val="6">6</div>
+
+  <div class="btn yellow" data-val="wd">WD</div>
+  <div class="btn yellow" data-val="no">NO</div>
+  <div class="btn gray" data-val="out">OUT</div>
+</div>
+
+<div class="controls">
+  <div class="controlBtn" id="strikeToggle">Toggle Strike</div>
+  <div class="controlBtn" id="undoBtn">Undo (up to 3)</div>
+  <div class="controlBtn" id="clearBtn">Clear All (start new)</div>
+</div>
+
+<!-- Modal: NO-ball choices -->
+<div id="noModal" class="modal">
+  <div class="mcard">
+    <div style="font-weight:800">No-ball — choose:</div>
+    <div class="grid" id="noOptions">
+      <div class="gbtn" data-n="N">N (only no-ball)</div>
+      <div class="gbtn" data-n="1">N1</div>
+      <div class="gbtn" data-n="2">N2</div>
+      <div class="gbtn" data-n="3">N3</div>
+      <div class="gbtn" data-n="4">N4</div>
+      <div class="gbtn" data-n="6">N6</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: OUT types -->
+<div id="outModal" class="modal">
+  <div class="mcard">
+    <div style="font-weight:800">Select out type</div>
+    <div class="grid" id="outOptions">
+      <div class="gbtn" data-out="bowled">Bowled</div>
+      <div class="gbtn" data-out="catch">Catch</div>
+      <div class="gbtn" data-out="run out">Run out</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Who's out -->
+<div id="whoOutModal" class="modal">
+  <div class="mcard">
+    <div style="font-weight:800">Who's out?</div>
+    <div class="grid" id="whoGrid">
+      <!-- populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Enter next player/bowler -->
+<div id="nextModal" class="modal">
+  <div class="mcard">
+    <div style="font-weight:800" id="nextTitle">Enter next</div>
+    <input id="nextName" class="smallInput" style="margin-top:8px"/>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <div class="gbtn" id="nextSave">Save</div>
+      <div class="gbtn" id="nextCancel">Cancel</div>
+    </div>
+  </div>
+</div>
 
 <script>
-let totalScore = 0;
-let balls = 0;
-let history = [];
+/* --------- CONFIG: put your web app URL here --------- */
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyhB7zWr7iiK5G-rmSZZ_hUJo_7O2Pad1knwAdXQ9YC7QVP75VgUNj2E0aPt-2bu_X3bA/exec'; // <-- REPLACE with your Apps Script web app URL
 
-// 👇 Yaha apna /exec URL paste karo
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQ3R4xV-Q86GC87yM8Q32pLd6jfTW545rNW8AhjvrdFcXcw7OCEl5vH8cOMO82OW0d/exec";
+/* --------- State --------- */
+let state = {
+  batter:[ document.getElementById('batter1').value || 'Batter 1',
+           document.getElementById('batter2').value || 'Batter 2' ],
+  strikerIndex: 0, // 0 -> batter1, 1 -> batter2
+  bowler: '',
+  totalRuns: 0,
+  legalBalls: 0, // counts only legal deliveries (0..)
+  actions: [] // list of events with eventId (for replay/undo)
+};
 
-function updateDisplay() {
-  document.getElementById("totalScore").innerText = totalScore;
-  document.getElementById("overs").innerText = Math.floor(balls/6) + "." + (balls%6);
+const maxUndo = 3;
+
+/* UI refs */
+const totalRunsEl = document.getElementById('totalRuns');
+const oversEl = document.getElementById('overs');
+const bowlerInput = document.getElementById('bowler');
+const batter1Input = document.getElementById('batter1');
+const batter2Input = document.getElementById('batter2');
+const dot1 = document.getElementById('dot1'), dot2 = document.getElementById('dot2');
+
+/* helpers */
+function updateUI(){
+  document.getElementById('batter1').value = state.batter[0];
+  document.getElementById('batter2').value = state.batter[1];
+  bowlerInput.value = state.bowler;
+  totalRunsEl.textContent = state.totalRuns;
+  oversEl.textContent = Math.floor(state.legalBalls/6) + '.' + (state.legalBalls%6);
+  // striker dot
+  dot1.style.opacity = (state.strikerIndex === 0) ? '1' : '.35';
+  dot2.style.opacity = (state.strikerIndex === 1) ? '1' : '.35';
 }
 
-function sendToSheet(entry) {
-  const bowler = document.getElementById("bowler").value;
-  const striker = document.getElementById("batter1").value; // default striker
+/* apply event (local only) */
+function applyEventLocally(ev){
+  // ev: {type:'run'|'extra'|'no'|'out', runs: number added to total, batRuns: runs off bat (0 if extra only),
+  // legalDelivery: bool, outType?, dismissedIndex?, incomingBatter?, bowler, eventId}
+  state.totalRuns += (ev.runs || 0);
+  if(ev.legalDelivery) state.legalBalls += 1;
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({ bowler, entry, striker }),
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.text())
-  .then(txt => {
-    console.log("Server response:", txt);
-    alert("Google Sheet response: " + txt);
-  })
-  .catch(err => {
-    console.error("Fetch error:", err);
-    alert("❌ Error: " + err);
-  });
-}
+  // handle out replacement
+  if(ev.type === 'out'){
+    // remove dismissed and put new batter (incomingBatter may be '')
+    if(typeof ev.dismissedIndex === 'number'){
+      state.batter[ev.dismissedIndex] = ev.incomingBatter || ('Batter ' + (ev.dismissedIndex+1));
+    }
+  }
 
-function addScore(entry) {
-  history.push({score: totalScore, balls: balls});
-
-  if(entry === "wd" || entry === "no") {
-    totalScore += 1;
-  } else if(entry === "out") {
-    // yahan baad me out dialog add hoga
+  // strike change rules:
+  // change strike when batRuns is odd (1 or 3)
+  if(ev.betRunsForStrike !== undefined){
+    if(ev.betRunsForStrike % 2 === 1) toggleStrike(false); // false => do not push new state to actions
   } else {
-    totalScore += parseInt(entry);
-    balls++;
+    // fallback: if ev.batRuns odd
+    if(ev.batRuns && (ev.batRuns %2 ===1)) toggleStrike(false);
   }
 
-  updateDisplay();
-  sendToSheet(entry);
+  // at end of over: if legalBalls %6 ===0 (over completed) then toggle strike
+  if(state.legalBalls > 0 && state.legalBalls % 6 === 0){
+    // show next bowler modal
+    showNextModal('Enter next bowler', async (name) => {
+      state.bowler = name || state.bowler;
+      toggleStrike(false); // strike changes at over end
+      updateUI();
+    });
+  }
+  updateUI();
 }
 
-function undo() {
-  if(history.length > 0) {
-    let last = history.pop();
-    totalScore = last.score;
-    balls = last.balls;
-    updateDisplay();
+/* toggle strike */
+function toggleStrike(push=true){
+  state.strikerIndex = 1 - state.strikerIndex;
+  if(push) {
+    // for manual toggle we record an 'action' of type 'strike' with no sheet entry
+    // but user expects manual strike change local only - not pushed to sheet
+  }
+  updateUI();
+}
+
+/* append to Google Sheet (via Apps Script) */
+async function appendToSheet(payload){
+  try{
+    const res = await fetch(WEBAPP_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({action:'append'}, payload))
+    });
+    const j = await res.json();
+    return j;
+  } catch(err){
+    console.error('Append error', err);
+    return {status:'error', message: err.toString()};
   }
 }
 
-function clearAll() {
-  totalScore = 0;
-  balls = 0;
-  history = [];
-  updateDisplay();
-
-  fetch(SCRIPT_URL+"?clear", { method: "POST" });
+/* undo on sheet by eventId */
+async function undoOnSheet(eventId){
+  try{
+    const res = await fetch(WEBAPP_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'undo', eventId})
+    });
+    return await res.json();
+  } catch(err){
+    console.error('Undo error', err);
+    return {status:'error', message: err.toString()};
+  }
 }
+
+/* clear marker on sheet */
+async function clearMarkerOnSheet(){
+  try{
+    const res = await fetch(WEBAPP_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'clear'})
+    });
+    return await res.json();
+  } catch(err){
+    console.error('Clear error', err);
+    return {status:'error', message: err.toString()};
+  }
+}
+
+/* handle button clicks from numpad */
+document.querySelectorAll('.numpad .btn').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const val = btn.dataset.val;
+    state.bowler = bowlerInput.value.trim();
+    state.batter[0] = batter1Input.value.trim() || state.batter[0];
+    state.batter[1] = batter2Input.value.trim() || state.batter[1];
+    updateUI();
+
+    if(!state.bowler){
+      alert('Enter bowler name first.');
+      return;
+    }
+
+    if(val === 'no'){
+      showModal('noModal');
+      return;
+    }
+    if(val === 'out'){
+      showModal('outModal');
+      return;
+    }
+    if(val === 'wd'){
+      // wide: +1 run, not legal delivery
+      const ev = {
+        type:'extra', runs:1, batRuns:0, legalDelivery:false, bowler: state.bowler
+      };
+      // append to sheet
+      const payload = {
+        bowler: state.bowler,
+        eventLabel: 'wd',
+        striker: state.batter[state.strikerIndex],
+        runs: ev.runs,
+        isOut: false
+      };
+      const resp = await appendToSheet(payload);
+      if(resp.status === 'ok'){
+        ev.eventId = resp.eventId;
+        state.actions.push(ev);
+        applyEventLocally(ev);
+      } else {
+        alert('Sheet error: ' + (resp.message || resp.status));
+      }
+      return;
+    }
+
+    // numeric 0,1,2,3,4,6
+    const runs = parseInt(val,10);
+    const legal = true;
+    const ev = {
+      type:'run', runs: runs, batRuns: runs, legalDelivery: true, bowler: state.bowler
+    };
+    const payload = {
+      bowler: state.bowler,
+      eventLabel: String(runs),
+      striker: state.batter[state.strikerIndex],
+      runs: ev.runs,
+      isOut: false
+    };
+    const resp = await appendToSheet(payload);
+    if(resp.status === 'ok'){
+      ev.eventId = resp.eventId;
+      state.actions.push(ev);
+      applyEventLocally(ev);
+      // keep actions limited? we keep all for robust replay
+    } else {
+      alert('Sheet error: ' + (resp.message || resp.status));
+    }
+  });
+});
+
+/* NO-ball modal handling */
+document.getElementById('noOptions').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.gbtn');
+  if(!btn) return;
+  const n = btn.dataset.n; // 'N','1','2','3','4','6'
+  hideModal('noModal');
+  state.bowler = bowlerInput.value.trim();
+  if(!state.bowler){ alert('Enter bowler first'); return; }
+
+  let batRuns = 0;
+  if(n === 'N'){ batRuns = 0; }
+  else batRuns = parseInt(n,10);
+
+  const totalAdd = 1 + batRuns; // 1 for no-ball extra + bat runs
+  const ev = {
+    type:'no', runs: totalAdd, batRuns: batRuns, legalDelivery: false, bowler: state.bowler
+  };
+  const payload = {
+    bowler: state.bowler,
+    eventLabel: 'no' + (batRuns?('+'+batRuns):''),
+    striker: state.batter[state.strikerIndex],
+    runs: ev.runs,
+    isOut: false
+  };
+  const resp = await appendToSheet(payload);
+  if(resp.status === 'ok'){
+    ev.eventId = resp.eventId;
+    state.actions.push(ev);
+    // For strike change rule: change if batRuns odd (1 or 3)
+    ev.betRunsForStrike = batRuns;
+    applyEventLocally(ev);
+  } else {
+    alert('Sheet error: ' + (resp.message || resp.status));
+  }
+});
+
+/* OUT modal handling */
+let pendingOutType = null;
+document.getElementById('outOptions').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.gbtn');
+  if(!btn) return;
+  pendingOutType = btn.dataset.out;
+  hideModal('outModal');
+  // now ask who's out
+  showWhoOut();
+});
+
+function showWhoOut(){
+  const whoGrid = document.getElementById('whoGrid');
+  whoGrid.innerHTML = '';
+  const b1 = document.createElement('div');
+  b1.className = 'gbtn'; b1.textContent = state.batter[0]; b1.dataset.idx = 0;
+  const b2 = document.createElement('div');
+  b2.className = 'gbtn'; b2.textContent = state.batter[1]; b2.dataset.idx = 1;
+  whoGrid.appendChild(b1); whoGrid.appendChild(b2);
+  showModal('whoOutModal');
+}
+
+document.getElementById('whoGrid').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.gbtn'); if(!btn) return;
+  const idx = parseInt(btn.dataset.idx,10);
+  hideModal('whoOutModal');
+
+  // ask for next batter name
+  showNextModal('Enter next batter', async (incomingName)=>{
+    const ev = {
+      type: 'out',
+      runs: 0,
+      batRuns: 0,
+      legalDelivery: true,
+      isOut: true,
+      outType: pendingOutType,
+      dismissedIndex: idx,
+      incomingBatter: incomingName || ('Batter ' + (idx+1)),
+      bowler: state.bowler
+    };
+    const payload = {
+      bowler: state.bowler,
+      eventLabel: pendingOutType,
+      striker: state.batter[state.strikerIndex],
+      runs: ev.runs,
+      isOut: true,
+      outType: pendingOutType
+    };
+    const resp = await appendToSheet(payload);
+    if(resp.status === 'ok'){
+      ev.eventId = resp.eventId;
+      state.actions.push(ev);
+      applyEventLocally(ev);
+    } else {
+      alert('Sheet error: ' + (resp.message || resp.status));
+    }
+  });
+});
+
+/* Next modal utility */
+function showNextModal(title, onSave){
+  const modal = document.getElementById('nextModal');
+  document.getElementById('nextTitle').textContent = title;
+  document.getElementById('nextName').value = '';
+  modal.classList.add('show');
+  document.getElementById('nextSave').onclick = () => {
+    const name = document.getElementById('nextName').value.trim();
+    modal.classList.remove('show');
+    onSave(name);
+  };
+  document.getElementById('nextCancel').onclick = () => {
+    modal.classList.remove('show');
+  };
+}
+
+/* show / hide modal helpers */
+function showModal(id){ document.getElementById(id).classList.add('show'); }
+function hideModal(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click', (ev)=>{
+  if(ev.target === m) m.classList.remove('show');
+}));
+
+/* Next bowler on over end handled inside applyEventLocally -> showNextModal */
+
+/* Controls: Strike toggle, Undo, Clear */
+document.getElementById('strikeToggle').addEventListener('click', ()=>{
+  toggleStrike(true);
+});
+
+document.getElementById('undoBtn').addEventListener('click', async ()=>{
+  if(state.actions.length === 0) { alert('No actions to undo'); return; }
+  // we allow up to maxUndo undo operations in one click? The user said "undo se 3 step peche tak"
+  // Here we'll undo 1 step per click, but can be clicked up to 3 times.
+  const last = state.actions[state.actions.length -1];
+  if(!last || !last.eventId){
+    alert('Nothing to undo on sheet');
+    return;
+  }
+  // call sheet undo
+  const resp = await undoOnSheet(last.eventId);
+  if(resp.status === 'ok'){
+    // remove locally and recompute by replaying remaining actions
+    state.actions.pop();
+    replayFromActions();
+  } else {
+    alert('Undo failed: ' + (resp.message || resp.status));
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', async ()=>{
+  if(!confirm('Clear local UI and mark new start in sheet? Old data will remain saved.')) return;
+  const resp = await clearMarkerOnSheet();
+  if(resp.status === 'ok'){
+    // reset UI but do not delete old data
+    state.totalRuns = 0;
+    state.legalBalls = 0;
+    state.actions = [];
+    state.batter = ['Batter 1','Batter 2'];
+    state.strikerIndex = 0;
+    state.bowler = '';
+    updateUI();
+    alert('Cleared locally and marker added to sheet.');
+  } else {
+    alert('Clear failed: ' + (resp.message || resp.status));
+  }
+});
+
+/* replay actions to recompute state (used after undo) */
+function replayFromActions(){
+  // reset to initial
+  state.totalRuns = 0;
+  state.legalBalls = 0;
+  // keep current batter names if actions contain changes; to be safe set to the currently visible names before replay
+  state.batter = [document.getElementById('batter1').value || 'Batter 1', document.getElementById('batter2').value || 'Batter 2'];
+  state.strikerIndex = 0;
+  // apply actions one by one (without re-appending to sheet)
+  const copy = state.actions.slice();
+  state.totalRuns = 0; state.legalBalls = 0;
+  // default batter names might change via out actions in sequence
+  state.batter = [document.getElementById('batter1').value || 'Batter 1', document.getElementById('batter2').value || 'Batter 2'];
+  state.strikerIndex = 0;
+  for(const ev of copy){
+    // update totals
+    state.totalRuns += (ev.runs || 0);
+    if(ev.legalDelivery) state.legalBalls += 1;
+    if(ev.type === 'out' && typeof ev.dismissedIndex === 'number'){
+      state.batter[ev.dismissedIndex] = ev.incomingBatter || ('Batter ' + (ev.dismissedIndex+1));
+    }
+    // strike change if batRuns odd
+    if(ev.betRunsForStrike !== undefined){
+      if(ev.betRunsForStrike %2 === 1) state.strikerIndex = 1 - state.strikerIndex;
+    } else if(ev.batRuns && (ev.batRuns %2 ===1)){
+      state.strikerIndex = 1 - state.strikerIndex;
+    }
+    // over end strike change:
+    if(state.legalBalls > 0 && state.legalBalls % 6 === 0){
+      state.strikerIndex = 1 - state.strikerIndex;
+    }
+  }
+  updateUI();
+}
+
+/* make batter name changes reflect to state when user edits inputs */
+batter1Input.addEventListener('change', ()=>{ state.batter[0] = batter1Input.value.trim(); updateUI(); });
+batter2Input.addEventListener('change', ()=>{ state.batter[1] = batter2Input.value.trim(); updateUI(); });
+bowlerInput.addEventListener('change', ()=>{ state.bowler = bowlerInput.value.trim(); updateUI(); });
+
+/* click on dots to set striker */
+dot1.addEventListener('click', ()=>{ state.strikerIndex = 0; updateUI(); });
+dot2.addEventListener('click', ()=>{ state.strikerIndex = 1; updateUI(); });
+
+/* init */
+updateUI();
 </script>
 
 </body>
